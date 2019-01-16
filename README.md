@@ -1,6 +1,10 @@
 # reproc
-to make a cross-platform process management library
+make a cross-platform process management library to
+1. start child process
+2. communite with child process through streams *synchronously*
+
+the goal for this library to be:
 1. header-only.
 2. lightweighted and simple API.
 
-copied from: https://github.com/DaanDeMeyer/reproc
+code from: https://github.com/DaanDeMeyer/reproc
