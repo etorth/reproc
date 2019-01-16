@@ -1,4 +1,6 @@
 # reproc
-shameless copy from: https://github.com/DaanDeMeyer/reproc
+to make a cross-platform process management library
+1. header-only.
+2. lightweighted and simple API.
 
-amalgamation version to make reproc easier to embed to other applications/libraries.
+copied from: https://github.com/DaanDeMeyer/reproc
