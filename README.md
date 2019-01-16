@@ -7,4 +7,4 @@ the goal for this library to be:
 1. header-only.
 2. lightweighted and simple API.
 
-code from: https://github.com/DaanDeMeyer/reproc
+most code copies from: https://github.com/DaanDeMeyer/reproc
