@@ -1,4 +1,4 @@
-# reproc
+# xmproc
 make a cross-platform process management library to
 1. start child process
 2. communite with child process through streams *synchronously*
