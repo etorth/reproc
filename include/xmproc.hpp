@@ -1,65 +1,197 @@
-#ifndef REPROC_H
-#define REPROC_H
+#ifndef __XMPROC_HPP__R48761038463075__
+#define __XMPROC_HPP__R48761038463075__
 
-/*!
-reproc's error enum. Contains all errors that may be returned by reproc's API.
-Because `REPROC_SUCCESS` evaluates to zero it is possible to check for errors as
-follows:
+namespace xmproc
+{
+    enum class errcode: int
+    {
+        SUCCESS = 0,
 
-```c
-REPROC_ERROR error = reproc_read(...);
-if (error) { return error; } // Only executes if reproc_read returns an error.
-```
-*/
-// When editing make sure to change the corresponding enum in error.hpp as well.
-typedef enum {
-  /*! Indicates a reproc API call was successful. An API function return this
-  value if no error occurs during its execution. */
-  REPROC_SUCCESS = 0,
+        // system errors:
+        // reproc errors: these errors do not correspond to a system error.
 
-  // reproc errors: these errors do not correspond to a system error.
+        // time passed to the xmproc API expired
+        WAIT_TIMEOUT,
 
-  /*! A timeout value passed to an API function expired. */
-  REPROC_WAIT_TIMEOUT = 1,
-  /*! The child process closed one of its streams (and in the case of
-  stdout/stderr all of the data from that stream has been read). */
-  REPROC_STREAM_CLOSED = 2,
-  /*! Only part of the buffer was written to the stdin of the child process. */
-  REPROC_PARTIAL_WRITE = 3,
+        /*! The child process closed one of its streams (and in the case of stdout/stderr all of the data from that stream has been read). */
+        STREAM_CLOSED = 2,
+        /*! Only part of the buffer was written to the stdin of the child process. */
+        PARTIAL_WRITE = 3,
 
-  // system errors: these errors correspond to a system error.
+        // system errors: these errors correspond to a system error.
 
-  /*! A memory allocation inside reproc failed (Windows only) or the operating
-  system did not have enough memory to execute a system call succesfully. */
-  REPROC_NOT_ENOUGH_MEMORY = 4,
-  /*! The parent or child process was not allowed to create any more pipes. */
-  REPROC_PIPE_LIMIT_REACHED = 5,
-  /*! A blocking system call (read, write, wait, ...) was interrupted by a
-  signal. */
-  REPROC_INTERRUPTED = 6,
-  /*! The parent process was not allowed to spawn any more child processes. */
-  REPROC_PROCESS_LIMIT_REACHED = 7,
-  /*! An UTF-8 string did not contain valid unicode. */
-  REPROC_INVALID_UNICODE = 8,
-  /*! The parent process does not have permission to execute the program. */
-  REPROC_PERMISSION_DENIED = 9,
-  /*! Too many symlinks were encountered while looking for the program. */
-  REPROC_SYMLINK_LOOP = 10,
-  /*! The program or working directory was not found. */
-  REPROC_FILE_NOT_FOUND = 11,
-  /*! The given name or path was too long (most systems have path length
-  limits). */
-  REPROC_NAME_TOO_LONG = 12,
-  /*! The given argument list was too long (some systems limit the size of
-  argv). */
-  REPROC_ARGS_TOO_LONG = 13,
-  /*! The system does not support executing the program. */
-  REPROC_NOT_EXECUTABLE = 14,
-  /*! Unlike POSIX, Windows does not include information about exactly which
-  errors can occur in its documentation. If an error occurs that is not known
-  functions will return `REPROC_UNKNOWN_ERROR`. */
-  REPROC_UNKNOWN_ERROR = 15
-} REPROC_ERROR;
+        /*! A memory allocation inside reproc failed (Windows only) or the operating
+          system did not have enough memory to execute a system call succesfully. */
+        NOT_ENOUGH_MEMORY = 4,
+        /*! The parent or child process was not allowed to create any more pipes. */
+        PIPE_LIMIT_REACHED = 5,
+        /*! A blocking system call (read, write, wait, ...) was interrupted by a
+          signal. */
+        INTERRUPTED = 6,
+        /*! The parent process was not allowed to spawn any more child processes. */
+        PROCESS_LIMIT_REACHED = 7,
+        /*! An UTF-8 string did not contain valid unicode. */
+        INVALID_UNICODE = 8,
+        /*! The parent process does not have permission to execute the program. */
+        PERMISSION_DENIED = 9,
+        /*! Too many symlinks were encountered while looking for the program. */
+        SYMLINK_LOOP = 10,
+        /*! The program or working directory was not found. */
+        FILE_NOT_FOUND = 11,
+        /*! The given name or path was too long (most systems have path length
+          limits). */
+        NAME_TOO_LONG = 12,
+        /*! The given argument list was too long (some systems limit the size of
+          argv). */
+        ARGS_TOO_LONG = 13,
+        /*! The system does not support executing the program. */
+        NOT_EXECUTABLE = 14,
+        /*! Unlike POSIX, Windows does not include information about exactly which
+          errors can occur in its documentation. If an error occurs that is not known
+          functions will return `UNKNOWN_ERROR`. */
+        UNKNOWN_ERROR = 15
+    }
+
+    constexpr const char *strerr(xmproc::errcode ec)
+    {
+        switch(ec){
+            case xmproc::errcode::SUCCESS               : return "success";
+            case xmproc::errcode::WAIT_TIMEOUT          : return "wait timeout";
+            case xmproc::errcode::STREAM_CLOSED         : return "stream closed";
+            case xmproc::errcode::PARTIAL_WRITE         : return "partial write";
+            case xmproc::errcode::NOT_ENOUGH_MEMORY     : return "memory error";
+            case xmproc::errcode::PIPE_LIMIT_REACHED    : return "pipe limit reached";
+            case xmproc::errcode::INTERRUPTED           : return "interrupted";
+            case xmproc::errcode::PROCESS_LIMIT_REACHED : return "process limit reached";
+            case xmproc::errcode::INVALID_UNICODE       : return "invalid unicode";
+            case xmproc::errcode::PERMISSION_DENIED     : return "permission denied";
+            case xmproc::errcode::SYMLINK_LOOP          : return "symlink loop";
+            case xmproc::errcode::FILE_NOT_FOUND        : return "file not found";
+            case xmproc::errcode::NAME_TOO_LONG         : return "name too long";
+            case xmproc::errcode::ARGS_TOO_LONG         : return "args too long";
+            case xmproc::errcode::NOT_EXECUTABLE        : return "not executable";
+            default                                     : return "unknown error";
+        }
+    }
+}
+
+
+namespace xmproc
+{
+    class process
+    {
+        public:
+            xmproc::ec start(std::string cmdline, const char *workind_directory)
+            {
+                assert(argc > 0);
+                assert(argv);
+                assert(argv[argc] == nullptr);
+
+                for (int i = 0; i < argc; i++) {
+                    assert(argv[i]);
+                }
+
+                xmproc::details::pipe_desp child_stdin;
+                xmproc::details::pipe_desp child_stdout;
+                xmproc::details::pipe_desp child_stderr;
+
+#if defined(_WIN32)
+                child_stdin .inherit = true;
+                child_stdout.inherit = true;
+                child_stderr.inherit = true;
+
+                m_stdin .inherit = false;
+                m_stdout.inherit = false;
+                m_stderr.inherit = false;
+#endif
+                if(auto ec = m_stdin .direct_to(child_stdin)){
+                    return ec;
+                }
+
+                if(auto ec = m_stdout.direct_from(child_stdout)){
+                    return ec;
+                }
+
+                if(auto ec = m_stdout.direct_from(child_stderr)){
+                    return ec;
+                }
+
+                details::proc_opts opts
+                {
+                    .working_directory = nullptr;
+                    .stdin_desp        = child_stdin;
+                    .stdout_desp       = child_stdout;
+                    .stderr_desp       = child_stderr;
+                };
+
+#if defined(_WIN32)
+                std::wstring cmdline_wstring = xmproc::details::utf8_to_wstring(cmdline);
+                std::wstring working_directory_wstring = xmproc::details::utf8_to_wstring(working_directory);
+#endif
+
+                if(auto ec = xmproc::details::process_create(&opts)){
+                    cleanup();
+                }
+                return xmproc::errcode::success;
+            }
+
+        public:
+            xmproc::ec stop(
+                    xmproc::operation op1, unsigned int t1, 
+                    xmproc::operation op2, unsigned int t2, 
+                    xmproc::operation op3, unsigned int t3, int *exit_status)
+            {
+                xmproc::operation ops[3]
+                {
+                    op1, op2, op3,
+                };
+
+                unsigned int timeouts[3]
+                {
+                    t1, t2, t3,
+                }
+
+                auto ec = xmproc::errcode::wait_timeout;
+
+                for(int i = 0; i < 3; i++){
+                    switch(ops[i]){
+                        case xmproc::op::nop:
+                            {
+                                continue;
+                            }
+                        case xmproc::op::wait:
+                            {
+                                break;
+                            }
+                        case xmproc::op::terminate:
+                            {
+                                res = terminate();
+                                break;
+                            }
+                        case xmproc::op::kill:
+                            {
+                                res = kill();
+                                break;
+                            }
+                        default:
+                            {
+                                return xmproc::errcode::invalid_argument;
+                            }
+                    }
+
+                    if(ec != xmproc::errcode::success && ec != xmproc::errcode::wait_timeout){
+                        break;
+                    }
+
+                    ec = wait(timeouts[i], exit_status);
+
+                    if(ec != xmproc::errcode::wait_timeout){
+                        break;
+                    }
+                }
+                return ec;
+            }
+
 
 #ifdef __cplusplus
 extern "C" {
